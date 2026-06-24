@@ -10,7 +10,7 @@ export default defineConfig({//啟用插件區
     tailwindcss(),
     basicSsl(),
   ],
-  base: '/mportfolio-frontend/',
+  base: '/portfolio-frontend/',
   server: {
     port: 5173,
     headers: {
