@@ -10,6 +10,9 @@ export default defineConfig({//啟用插件區
     tailwindcss(),
     basicSsl(),
   ],
+  base: process.env.NODE_ENV === 'production'
+    ? '/mportfolio-frontend/'
+    : '/',
   server: {
     port: 5173,
     headers: {
