@@ -34,7 +34,7 @@ const NavigationHandler = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/portfolio-frontend">
         <NavigationHandler />
         <div className="flex flex-col min-h-screen bg-blue-300">
           {/* 定義路徑與組件的對應關係 */}
