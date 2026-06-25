@@ -7,7 +7,7 @@ const Login: React.FC = () => {
 
   //登入成功的回呼函式
   const handleSuccess = async (credentialResponse: any) => {
-    console.log("Google 登入成功，拿到憑證：", credentialResponse);
+    console.log("Google 登入成功");
     if (credentialResponse.credential) {
       await loginWithGoogle(credentialResponse.credential);
     }

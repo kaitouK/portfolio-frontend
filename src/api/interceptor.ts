@@ -9,7 +9,6 @@ const apiService: AxiosInstance = axios.create({
   timeout: 5000,
   withCredentials: true,
 });
-console.log("當前的 API Base URL 是:", rawUrl);
 apiService.interceptors.response.use(
   (response) => {
 

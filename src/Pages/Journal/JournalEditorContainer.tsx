@@ -242,23 +242,6 @@ export const JournalEditorContainer = ({
           );
         }}
       />
-      {/*<div className="flex items-center gap-2">
-        <span className="text-sm text-gray-500">標籤：</span>
-        {tags.map((tag, idx) => (
-          <span
-            key={idx}
-            className="bg-gray-100 px-2 py-1 rounded text-xs text-gray-600"
-          >
-            #{tag}
-          </span>
-        ))}
-        <button
-          onClick={() => handleTagsChange([...tags, `Tag-${tags.length + 1}`])}
-          className="text-xs text-blue-500 underline"
-        >
-          + 模擬新增標籤
-        </button>
-      </div>*/}
 
       <RichTextEditor
         key={editorKey} // 結合 journalId 與 editorKey，確保還原與發佈後都能正確重新整理
