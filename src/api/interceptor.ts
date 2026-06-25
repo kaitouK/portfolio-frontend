@@ -2,7 +2,7 @@ import axios, { type AxiosInstance } from 'axios';
 let rawUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
 
 if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-  rawUrl = `https://${rawUrl}`;
+  rawUrl = `https://${rawUrl}/api`;
 }
 const apiService: AxiosInstance = axios.create({
   baseURL: rawUrl,//讀取環境變數
