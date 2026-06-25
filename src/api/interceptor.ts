@@ -1,11 +1,15 @@
 import axios, { type AxiosInstance } from 'axios';
+let rawUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
 
+if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+  rawUrl = `https://${rawUrl}`;
+}
 const apiService: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,//讀取環境變數
+  baseURL: rawUrl,//讀取環境變數
   timeout: 5000,
   withCredentials: true,
 });
-console.log("當前的 API Base URL 是:", import.meta.env.VITE_API_BASE_URL);
+console.log("當前的 API Base URL 是:", rawUrl);
 apiService.interceptors.response.use(
   (response) => {
 
