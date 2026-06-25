@@ -31,9 +31,9 @@ jobs:
       - name: Create .env file
         run: |
           cat << EOF > .env
-          VITE_API_BASE_URL=${{ secrets.PROD_VITE_API_BASE_URL }}
-          VITE_ADMIN_ENTRY=${{ secrets.PROD_VITE_ADMIN_ENTRY }}
-          VITE_GOOGLE_CLIENT_ID=${{ secrets.PROD_VITE_GOOGLE_CLIENT_ID }}
+          VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+          VITE_ADMIN_ENTRY=${{ secrets.VITE_ADMIN_ENTRY }}
+          VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           EOF
 
       - name: Build project
