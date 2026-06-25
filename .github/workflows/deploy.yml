@@ -2,7 +2,7 @@ name: Deploy Review Website to GitHub Pages
 
 on:
   push:
-    branches: [ "main" ] # 當 main 分支有 push 時觸發
+    branches: ["main"] # 當 main 分支有 push 時觸發
 
 # 設定 GitHub Token 的權限，允許它部署到 GitHub Pages
 permissions:
@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -30,7 +30,7 @@ jobs:
       # 關鍵步驟：在雲端建立 .env 檔案，並把 GitHub Secret 塞進去
       - name: Create .env file
         run: |
-          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > .env.production
+          echo "VITE_API_BASE_URL=${{ secrets.PROD_VITE_API_BASE_URL }}" > .env.production
 
       - name: Build project
         run: npm run build
