@@ -23,6 +23,12 @@ const Header = () => {
             </Link>
           )}
           <Link
+            to="/login"
+            className="px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-100 hover:text-blue-600 transition-colors"
+          >
+            管理員登入
+          </Link>
+          <Link
             to="/lists"
             className="px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-100 hover:text-blue-600 transition-colors"
           >

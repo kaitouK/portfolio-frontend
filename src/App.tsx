@@ -31,8 +31,6 @@ const NavigationHandler = () => {
   return null; // 此組件不渲染任何東西
 };
 
-const ADMIN_SECRET_PATH = import.meta.env.VITE_ADMIN_ENTRY;
-
 const App = () => {
   return (
     <AuthProvider>
@@ -54,7 +52,7 @@ const App = () => {
               />
               <Route path="/lists" element={<ArtworkGallery />} />
               <Route path="/timeline" element={<Timeline2 />} />
-              <Route path={`/${ADMIN_SECRET_PATH}`} element={<Login />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/forbidden" element={<ForbiddenPage />} />
               {/* 萬用路由：處理 404 */}
               <Route path="*" element={<Main />} />
