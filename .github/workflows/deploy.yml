@@ -30,7 +30,7 @@ jobs:
       # 關鍵步驟：在雲端建立 .env 檔案，並把 GitHub Secret 塞進去
       - name: Create .env file
         run: |
-          cat << EOF > .env.production
+          cat << EOF > .env
           VITE_API_BASE_URL=${{ secrets.PROD_VITE_API_BASE_URL }}
           VITE_ADMIN_ENTRY=${{ secrets.PROD_VITE_ADMIN_ENTRY }}
           VITE_GOOGLE_CLIENT_ID=${{ secrets.PROD_VITE_GOOGLE_CLIENT_ID }}
