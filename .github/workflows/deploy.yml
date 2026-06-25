@@ -33,7 +33,8 @@ jobs:
           VITE_ADMIN_ENTRY: ${{ secrets.VITE_ADMIN_ENTRY }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
         run: npm run build
-
+      - name: Copy index.html to 404.html
+        run: cp dist/index.html dist/404.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
