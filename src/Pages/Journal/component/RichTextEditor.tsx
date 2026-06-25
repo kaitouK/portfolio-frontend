@@ -78,8 +78,7 @@ export const RichTextEditor = ({
       >(`/journal/image?journalId=${currentJournalId}`, formData);
 
       if (res.success && res.data.imageUrl && editor) {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace("/api", "");
-        const fullUrl = `${baseUrl}${res.data.imageUrl}`;
+        const fullUrl = res.data.imageUrl;
         console.log("圖片上傳成功，正在插入編輯器:", fullUrl);
         // 使用 Tiptap 的 command 鏈式操作，這會安全地在「當前游標位置」或「指定位置」插入
         // 如果你的 resizableImage 擴充套件有註冊 insertHtml 或特定的 command，可以直接用。
