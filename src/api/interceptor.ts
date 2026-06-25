@@ -1,12 +1,11 @@
 import axios, { type AxiosInstance } from 'axios';
 
-const ADMIN_SECRET_PATH = import.meta.env.VITE_ADMIN_ENTRY;
 const apiService: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,//讀取環境變數
   timeout: 5000,
   withCredentials: true,
 });
-
+console.log("當前的 API Base URL 是:", import.meta.env.VITE_API_BASE_URL);
 apiService.interceptors.response.use(
   (response) => {
 
@@ -23,7 +22,7 @@ apiService.interceptors.response.use(
     switch (status) {
       case 401:
         console.error('登入逾時，請重新登入');
-        window.location.href = '/' + ADMIN_SECRET_PATH;
+        window.location.href = '/login';
         break;
       case 403:
         console.error('權限不足，拒絕存取');
