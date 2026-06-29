@@ -29,3 +29,8 @@ export interface CategoryDto {
   categoryId: number;
   name: string;
 }
+export interface CursorPagedResult<T> {
+  data: T[];
+  nextCursor: string | null;
+  hasNextPage: boolean;
+}

@@ -1,28 +1,34 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getArtworks, deleteArtwork } from "../Pages/Artworks/artworkService";
 import type { ArtworkDto } from "../types/Interface";
-export const useArtworks = () => {
+export const useArtworks = (limit: number = 10) => {
   const [artworks, setArtworks] = useState<ArtworkDto[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  //分頁控制狀態
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasNextPage, setHasNextPage] = useState<boolean>(true);
+
+
   //取得資料
-  const fetchArtworks = async () => {
+  // 使用 useCallback 避免不必要的重新渲染
+  const fetchArtworks = useCallback(async (cursor: string | null = null, isRefresh = false) => {
+    // 如果不是重新整理，且正在載入或已經沒有下一頁，就直接回傳
+    if (!isRefresh && (loading || (!cursor && artworks.length > 0))) return;
     setLoading(true);
     try {
-      const result = await getArtworks();
+      const currentCursor = isRefresh ? null : cursor;
+      const result = await getArtworks(limit, currentCursor);
       if (result.success && result.data) {
-        // --- 排序邏輯：新到舊 ---
-        const sortedData = [...result.data].sort((a, b) => {
-          const dateA = a.completionDate
-            ? new Date(a.completionDate).getTime()
-            : 0;
-          const dateB = b.completionDate
-            ? new Date(b.completionDate).getTime()
-            : 0;
-          return dateB - dateA; // 後者減前者 = 降序排序 (新到舊)
-        });
-        setArtworks(sortedData);
+        const { data, nextCursor: newCursor, hasNextPage: hasNext } = result.data;
+
+        // 如果是第一頁(或重新整理)就直接覆蓋；否則就累加到陣列後方
+        setArtworks((prev) => (currentCursor ? [...prev, ...data] : data));
+
+        setNextCursor(newCursor);
+        setHasNextPage(hasNext);
+        setError(null);
       } else {
         setError(result.message || "載入失敗");
       }
@@ -30,6 +36,16 @@ export const useArtworks = () => {
       setError("系統錯誤，請稍後再試");
     } finally {
       setLoading(false);
+    }
+  }, [loading, artworks.length, limit]);
+  // 提供給外部的主動重新整理函式
+  const refresh = () => {
+    fetchArtworks(null, true);
+  };
+  // 載入下一頁的便捷函式
+  const loadMore = () => {
+    if (hasNextPage && !loading) {
+      fetchArtworks(nextCursor);
     }
   };
 
@@ -62,15 +78,18 @@ export const useArtworks = () => {
       ),
     );
   };
+  //初始載入第一頁
   useEffect(() => {
-    fetchArtworks();
+    fetchArtworks(null);
   }, []);
   return {
     artworks,
     loading,
     error,
+    hasNextPage,
+    loadMore,
     removeArtwork,
     updateLocalArtwork,
-    refresh: fetchArtworks,
+    refresh,
   };
 };

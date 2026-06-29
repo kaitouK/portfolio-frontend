@@ -1,9 +1,14 @@
 import apiService from '../../api/interceptor';
 //import axios from 'axios';
-import type { ApiResponseWithData, ArtworkDto } from '../../types/Interface';
+import type { ApiResponseWithData, ArtworkDto, CursorPagedResult } from '../../types/Interface';
 
-export const getArtworks = async (): Promise<ApiResponseWithData<ArtworkDto[]>> => {
-  const response = await apiService.get<any, ApiResponseWithData<ArtworkDto[]>>('/artworks');
+export const getArtworks = async (limit: number = 10,
+  cursor: string | null = null): Promise<ApiResponseWithData<CursorPagedResult<ArtworkDto>>> => {
+  let url = `/artworks?limit=${limit}`;
+  if (cursor) {
+    url += `&cursor=${encodeURIComponent(cursor)}`;
+  }
+  const response = await apiService.get<any, ApiResponseWithData<CursorPagedResult<ArtworkDto>>>(url);
   return response;
 };
 export const deleteArtwork = async (artworkId: number): Promise<ApiResponseWithData<null>> => {
