@@ -27,6 +27,7 @@ interface AuthContextType {
   loading: boolean;
   loginWithGoogle: (idToken: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  checkStatus: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,15 +36,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [auth, setAuth] = useState<AuthStatus>({ isAuthenticated: false });
   const [loading, setLoading] = useState<boolean>(true);
 
-  const checkStatus = async () => {
+  const checkStatus = async (): Promise<boolean> => {
     try {
       const res = await apiService.get<any, AuthResponse>("/auth/status");
 
       if (res && res.success) {
         setAuth(res.data);
+        return res.data.isAuthenticated;
       }
+      return false;
     } catch (error) {
       console.error("無法取得驗證狀態", error);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -90,7 +94,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ auth, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider
+      value={{ auth, loading, loginWithGoogle, logout, checkStatus }}
+    >
       {children}
     </AuthContext.Provider>
   );

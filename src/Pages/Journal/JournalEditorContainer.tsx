@@ -2,6 +2,13 @@ import { useEffect, useState, useCallback } from "react";
 import { RichTextEditor } from "./component/RichTextEditor";
 import apiService from "../../api/interceptor";
 import { debounce } from "lodash-es";
+import { useAuth } from "../../context/AuthContext";
+
+const BASENAME = "/portfolio-frontend";
+const navigateTo = (path: string) => {
+  window.location.assign(`${BASENAME}${path}`);
+};
+
 interface JournalEditorContainerProps {
   onPublishSuccess?: (newPost: {
     id: string;
@@ -26,6 +33,7 @@ export const JournalEditorContainer = ({
   const [lastSavedTime, setLastSavedTime] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true); //先跟後端確認有沒有草稿再顯示編輯器
   const [editorKey, setEditorKey] = useState<number>(0);
+  const { checkStatus } = useAuth();
 
   // 1. 進入頁面時，檢查是否有未完成的草稿
   useEffect(() => {
@@ -71,6 +79,12 @@ export const JournalEditorContainer = ({
         if (!json || json === '{"type":"doc","content":[{"type":"paragraph"}]}')
           return;
 
+        const isTokenValid = await checkStatus();
+        if (!isTokenValid) {
+          alert("登入連線已逾時，為保護您的資料，請重新登入後再儲存。");
+          return;
+        }
+
         setSaveStatus("saving");
         try {
           const res = await apiService.post<any, any>("/journal/draft", {
@@ -95,7 +109,7 @@ export const JournalEditorContainer = ({
     ),
     [],
   );
-  //  新增：不防抖的立即儲存功能
+  //  立即儲存功能
   const saveDraftImmediately = async (
     currentId: string,
     currentTitle: string,
@@ -109,6 +123,12 @@ export const JournalEditorContainer = ({
     if (!json || json === '{"type":"doc","content":[{"type":"paragraph"}]}')
       return;
 
+    const isTokenValid = await checkStatus();
+    if (!isTokenValid) {
+      alert("登入連線已逾時，為保護您的資料，請重新登入後再儲存。");
+      return;
+    }
+
     setSaveStatus("saving");
     try {
       const res = await apiService.post<any, any>("/journal/draft", {
@@ -118,9 +138,11 @@ export const JournalEditorContainer = ({
         contentHtml: html,
         tags: currentTags,
       });
+
       if (res.success) {
         setSaveStatus("saved");
         setLastSavedTime(new Date().toLocaleTimeString());
+
         if (res.data && res.data.id) {
           setJournalId(res.data.id);
         }
@@ -159,6 +181,14 @@ export const JournalEditorContainer = ({
       return;
     }
     debouncedSave.cancel(); // 立刻取消尚未執行的自動儲存，防止它在發布後又跑去儲存草稿
+
+    //避免發布時因token過期而失敗
+    const isTokenValid = await checkStatus();
+    if (!isTokenValid) {
+      alert("登入連線已逾時，請重新登入後再發布。");
+      return;
+    }
+
     try {
       const res = await apiService.post<any, any>("/journal/publish", {
         id: journalId || null,
@@ -186,8 +216,7 @@ export const JournalEditorContainer = ({
           setSaveStatus("idle");
           setEditorKey((prev) => prev + 1); // 改變 key 來清空富文本編輯器
         } else {
-          // 若無 callback (獨立頁面行為)，則跳轉
-          window.location.href = "/timeline";
+          navigateTo("/timeline");
         }
       }
     } catch (err) {
