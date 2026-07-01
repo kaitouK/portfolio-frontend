@@ -26,8 +26,8 @@ export const useArtworks = (limit: number = 10) => {
         // 如果是第一頁(或重新整理)就直接覆蓋；否則就累加到陣列後方
         setArtworks((prev) => (currentCursor ? [...prev, ...data] : data));
 
-        setNextCursor(newCursor);
-        setHasNextPage(hasNext);
+        setNextCursor(newCursor || null);
+        setHasNextPage(hasNext ?? false);
         setError(null);
       } else {
         setError(result.message || "載入失敗");
@@ -37,7 +37,7 @@ export const useArtworks = (limit: number = 10) => {
     } finally {
       setLoading(false);
     }
-  }, [loading, artworks.length, limit]);
+  }, [loading, artworks, limit]);
   // 提供給外部的主動重新整理函式
   const refresh = () => {
     fetchArtworks(null, true);

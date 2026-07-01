@@ -44,7 +44,7 @@ const ArtworkGallery = () => {
   );
 
   //  修改過渡狀態：只有在「第一次完全沒資料且載入中」才顯示全螢幕載入
-  if (loading && artworks.length === 0)
+  if (loading && (!artworks || artworks.length === 0))
     return <div className="text-center p-10 text-gray-500">載入中...</div>;
   if (error)
     return <div className="text-center p-10 text-red-500">錯誤：{error}</div>;
@@ -55,7 +55,7 @@ const ArtworkGallery = () => {
 
       {/* 響應式網格 */}
       <div className="flex flex-col items-center gap-12 mt-8 max-w-2xl mx-auto">
-        {artworks.map((art, i) => {
+        {artworks?.map((art, i) => {
           // 計算是否為倒數第 2 張圖
           const isSecondFromLast = artworks.length - 2 === i;
 
@@ -115,7 +115,7 @@ const ArtworkGallery = () => {
         index={index}
         close={() => setIndex(-1)}
         plugins={[Thumbnails, Captions]}
-        slides={artworks.map((art) => ({
+        slides={(artworks || []).map((art) => ({
           src: getFullImageUrl(art.imageUrl), // Lightbox 使用完整圖
           title: art.title,
           description: art.description,
