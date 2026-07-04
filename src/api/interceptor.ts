@@ -6,7 +6,7 @@ if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
 }
 const apiService: AxiosInstance = axios.create({
   baseURL: rawUrl,//讀取環境變數
-  timeout: 5000,
+  timeout: 30000,
   withCredentials: true,
 });
 apiService.interceptors.response.use(
