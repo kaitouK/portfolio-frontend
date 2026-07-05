@@ -6,7 +6,7 @@ const Main = () => {
         <h1 className="text-4xl font-black text-slate-800">怪盜K</h1>
         <p className="mt-4 text-slate-500 leading-relaxed">
           <br />
-          兼職插畫家
+          業餘插畫家
         </p>
 
         {/* ─── 新增：分隔線與社群連結 ─── */}

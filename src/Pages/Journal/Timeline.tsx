@@ -137,13 +137,15 @@ const Timeline2 = () => {
                     </span>
                   </div>
 
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="text-gray-400 hover:text-red-500 text-xs transition"
-                    title="刪除此貼文"
-                  >
-                    ✕
-                  </button>
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleDelete(post.id)}
+                      className="text-gray-400 hover:text-red-500 text-xs transition"
+                      title="刪除此貼文"
+                    >
+                      ✕
+                    </button>
+                  )}
                 </div>
                 {/* 顯示標籤 */}
                 {post.tags.length > 0 && (
