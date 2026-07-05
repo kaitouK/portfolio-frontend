@@ -18,6 +18,8 @@
 - npm run build # tsc -b && vite build（型別檢查會擋建置，改完請確認 tsc 通過）
 - npm run lint # eslint .
 - npm run preview
+- npm run test # vitest run（測試檔與原始碼同目錄，\*.test.ts）
+- npm run test:watch # vitest watch 模式
 
 ## API 連接
 

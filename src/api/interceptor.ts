@@ -25,7 +25,8 @@ apiService.interceptors.response.use(
     switch (status) {
       case 401:
         console.error('登入逾時，請重新登入');
-        window.location.href = '/login';
+        // BASE_URL 來自 vite.config 的 base（/portfolio-frontend/），避免硬編路徑
+        window.location.href = `${import.meta.env.BASE_URL}login`;
         break;
       case 403:
         console.error('權限不足，拒絕存取');
@@ -40,6 +41,8 @@ apiService.interceptors.response.use(
         console.error('伺服器錯誤，請稍後再試');
         break;
     }
+    // 必須 reject，否則呼叫端 await 到的是 undefined 而非進入 catch
+    return Promise.reject(error);
   }
 );
 
