@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { getArtworks, deleteArtwork } from "./artworkService";
 import type { ArtworkDto } from "./types";
 export const useArtworks = (limit: number = 10) => {
@@ -13,19 +13,19 @@ export const useArtworks = (limit: number = 10) => {
 
   //取得資料
   // 使用 useCallback 避免不必要的重新渲染
+  const loadingRef = useRef(false);
   const fetchArtworks = useCallback(async (cursor: string | null = null, isRefresh = false) => {
     // 如果不是重新整理，且正在載入或已經沒有下一頁，就直接回傳
-    if (!isRefresh && (loading || (!cursor && artworks.length > 0))) return;
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     try {
       const currentCursor = isRefresh ? null : cursor;
       const result = await getArtworks(limit, currentCursor);
       if (result.success && result.data) {
         const { data, nextCursor: newCursor, hasNextPage: hasNext } = result.data;
-
         // 如果是第一頁(或重新整理)就直接覆蓋；否則就累加到陣列後方
         setArtworks((prev) => (currentCursor ? [...prev, ...data] : data));
-
         setNextCursor(newCursor || null);
         setHasNextPage(hasNext ?? false);
         setError(null);
@@ -33,11 +33,13 @@ export const useArtworks = (limit: number = 10) => {
         setError(result.message || "載入失敗");
       }
     } catch (err) {
+      console.error("載入作品失敗", err);
       setError("系統錯誤，請稍後再試");
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, artworks, limit]);
+  }, [limit]);
   // 提供給外部的主動重新整理函式
   const refresh = () => {
     fetchArtworks(null, true);
@@ -62,7 +64,8 @@ export const useArtworks = (limit: number = 10) => {
         return false;
       }
     } catch (err) {
-      alert("系統錯誤，請稍後再試");
+      console.error("載入作品失敗", err);
+      setError("系統錯誤，請稍後再試");
       return false;
     }
   };
@@ -81,7 +84,7 @@ export const useArtworks = (limit: number = 10) => {
   //初始載入第一頁
   useEffect(() => {
     fetchArtworks(null);
-  }, []);
+  }, [fetchArtworks]);
   return {
     artworks,
     loading,

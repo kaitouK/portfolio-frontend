@@ -14,7 +14,8 @@ export const useCategories = () => {
         if (response.success && response.data) setCategories(response.data);
         else setError(response.message || "獲取分類失敗");
       } catch (err) {
-        setError("系統錯誤，無法獲取分類");
+        console.error("載入分類失敗", err);
+        setError("系統錯誤，請稍後再試");
       } finally {
         setLoading(false);
       }

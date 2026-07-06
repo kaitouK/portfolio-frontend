@@ -100,6 +100,7 @@ const ArtworkGallery = () => {
       {/* --- 編輯 Modal --- */}
       {editingArt && (
         <EditArtworkModal
+          key={editingArt.artworkId} // ← 換作品 = 換 key = 卸載舊 Modal、掛載新 Modal
           artwork={editingArt}
           categories={categories}
           categoriesLoading={categoriesLoading}

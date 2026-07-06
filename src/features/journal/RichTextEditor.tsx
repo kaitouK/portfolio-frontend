@@ -1,6 +1,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { saveDraft, uploadJournalImage } from "./journalService";
+import type { EditorView } from "@tiptap/pm/view";
 import { useEffect } from "react";
 import { JournalImageExtension } from "./plugins/JournalImageExtension";
 import React from "react";
@@ -27,7 +28,11 @@ export const RichTextEditor = ({
   const draftCreatingRef = React.useRef<Promise<string> | null>(null);
 
   // 處理圖片上傳並插入編輯器
-  const uploadAndInsertImage = async (view: any, file: File, pos: number) => {
+  const uploadAndInsertImage = async (
+    view: EditorView,
+    file: File,
+    pos: number,
+  ) => {
     let currentJournalId = journalId;
 
     try {
@@ -107,7 +112,7 @@ export const RichTextEditor = ({
       StarterKit,
       JournalImageExtension.configure({
         onImageEventSync: onImageEventSync,
-      } as any),
+      }),
     ],
     content: content ? JSON.parse(content) : "",
     editorProps: {

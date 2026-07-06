@@ -1,12 +1,17 @@
 import React from "react";
 import type { ArtworkDto } from "./types";
-import { getFullImageUrl, getCategoryName, formatDate } from "../../utils/artworkHelpers";
-import { useAuth } from "../../context/AuthContext";
+import {
+  getFullImageUrl,
+  getCategoryName,
+  formatDate,
+} from "../../utils/artworkHelpers";
+import { useAuth } from "../../hooks/useAuth";
+import type { CategoryDto } from "../categories/types";
 
 interface ArtworkCardProps {
   art: ArtworkDto;
   index: number;
-  categories: any[];
+  categories: CategoryDto[];
   onPreview: (index: number) => void;
   onEdit: (e: React.MouseEvent, art: ArtworkDto) => void;
   onDelete: (e: React.MouseEvent, id: number) => void;

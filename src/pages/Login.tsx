@@ -1,12 +1,12 @@
 import React from "react";
-import { useAuth } from "../context/AuthContext";
-import { GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../hooks/useAuth";
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 const Login: React.FC = () => {
   const { auth, loading, loginWithGoogle, logout } = useAuth();
 
   //登入成功的回呼函式
-  const handleSuccess = async (credentialResponse: any) => {
+  const handleSuccess = async (credentialResponse: CredentialResponse) => {
     console.log("Google 登入成功");
     if (credentialResponse.credential) {
       await loginWithGoogle(credentialResponse.credential);

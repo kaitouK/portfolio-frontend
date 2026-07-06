@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { updateArtwork } from "./artworkService";
 import type { ArtworkDto } from "./types";
 import type { CategoryDto } from "../categories/types";
@@ -20,24 +20,13 @@ const EditArtworkModal = ({
 }: EditArtworkModalProps) => {
   // 表單狀態留在 Modal 內部
   const [editForm, setEditForm] = useState({
-    title: "",
-    description: "",
-    categoryId: 1,
-    completionDate: "",
+    title: artwork.title || "",
+    description: artwork.description || "",
+    categoryId: artwork.categoryId || categories[0]?.categoryId || 1,
+    completionDate: artwork.completionDate
+      ? new Date(artwork.completionDate).toISOString().split("T")[0]
+      : new Date().toISOString().split("T")[0],
   });
-
-  // 當傳入的 artwork 改變時（或者初次開啟時），同步資料到表單
-  useEffect(() => {
-    const today = new Date().toISOString().split("T")[0];
-    setEditForm({
-      title: artwork.title || "",
-      description: artwork.description || "",
-      categoryId: artwork.categoryId || categories[0]?.categoryId || 1,
-      completionDate: artwork.completionDate
-        ? new Date(artwork.completionDate).toISOString().split("T")[0]
-        : today,
-    });
-  }, [artwork, categories]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -56,7 +45,8 @@ const EditArtworkModal = ({
         alert(result.message || "更新失敗");
       }
     } catch (err) {
-      alert("系統錯誤");
+      console.error("更新作品失敗", err);
+      alert("系統錯誤，請稍後再試");
     }
   };
 

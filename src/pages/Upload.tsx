@@ -12,7 +12,8 @@ import { uploadArtwork } from "../features/artworks/artworkService";
 const ImageUploader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState<boolean>(false); // 新增：拖曳狀態
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
   const {
     categories,
     loading: categoriesLoading,
@@ -24,13 +25,9 @@ const ImageUploader: React.FC = () => {
   const [completionDate, setCompletionDate] = useState<string>(
     new Date().toISOString().split("T")[0],
   ); // 新增：完成日期，預設為今天
-  const fileInputRef = React.useRef<HTMLInputElement>(null); // 新增：用於操作檔案輸入框的DOM
-
-  useEffect(() => {
-    if (categories.length > 0 && categoryId === 0) {
-      setCategoryId(categories[0].categoryId);
-    }
-  }, [categories, categoryId]);
+  const effectiveCategoryId =
+    categoryId !== 0 ? categoryId : (categories[0]?.categoryId ?? 0);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // 監控selectedFile 變化產生預覽圖
   useEffect(() => {
@@ -88,6 +85,7 @@ const ImageUploader: React.FC = () => {
   };
 
   const handleUpload = async (): Promise<void> => {
+    if (isUploading) return;
     if (!selectedFile) {
       alert("請先選取檔案！");
       return;
@@ -97,12 +95,13 @@ const ImageUploader: React.FC = () => {
       setSelectedFile(null);
       return;
     }
+    setIsUploading(true);
 
     const formData = new FormData();
 
     formData.append("File", selectedFile);
     formData.append("Title", title.trim() === "" ? "Untitled" : title);
-    formData.append("CategoryId", categoryId.toString()); // 預設類別 ID 為 0
+    formData.append("CategoryId", effectiveCategoryId.toString()); // 預設類別 ID 為 0
     formData.append("Description", description);
     formData.append("CompletionDate", completionDate); // 完成日期
 
@@ -123,6 +122,8 @@ const ImageUploader: React.FC = () => {
       } else {
         console.error("發生意外錯誤:", error);
       }
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -198,7 +199,7 @@ const ImageUploader: React.FC = () => {
           <label className="block mb-1 text-gray-700">分類標籤</label>
           <select
             className="w-full p-2 border-2 border-blue-100 rounded-lg text-base"
-            value={categoryId}
+            value={effectiveCategoryId}
             onChange={(e) => setCategoryId(Number(e.target.value))} // 轉回數字送給後端
             disabled={categoriesLoading || categoriesError !== null} // 載入中或有錯誤時禁用選單
           >
@@ -265,9 +266,15 @@ const ImageUploader: React.FC = () => {
       <div className="flex flex-col gap-3">
         <button
           onClick={handleUpload}
-          className="w-full py-3 bg-blue-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform active:scale-95"
+          disabled={isUploading}
+          className={`w-full py-3 text-white font-bold rounded-xl shadow-lg transition-all
+    ${
+      isUploading
+        ? "bg-gray-400 cursor-not-allowed scale-100" // 禁用時的樣式
+        : "bg-blue-500 hover:scale-105 active:scale-95" // 正常時的樣式
+    }`}
         >
-          上傳到伺服器
+          {isUploading ? "圖片上傳中..." : "上傳到伺服器"}
         </button>
 
         {selectedFile && (

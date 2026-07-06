@@ -1,16 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { RichTextEditor } from "./RichTextEditor";
-import {
-  getActiveDraft,
-  saveDraft,
-  publishJournal,
-} from "./journalService";
+import { getActiveDraft, saveDraft, publishJournal } from "./journalService";
 import { debounce } from "lodash-es";
-import { useAuth } from "../../context/AuthContext";
-
+import { useAuth } from "../../hooks/useAuth";
 const navigateTo = (path: string) => {
   // BASE_URL 來自 vite.config 的 base（/portfolio-frontend/），避免硬編路徑
-  window.location.assign(`${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`);
+  window.location.assign(
+    `${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`,
+  );
 };
 
 interface JournalEditorContainerProps {
@@ -38,6 +35,61 @@ export const JournalEditorContainer = ({
   const [isLoading, setIsLoading] = useState(true); //先跟後端確認有沒有草稿再顯示編輯器
   const [editorKey, setEditorKey] = useState<number>(0);
   const { checkStatus } = useAuth();
+
+  const EMPTY_DOC = '{"type":"doc","content":[{"type":"paragraph"}]}';
+  const performSave = useCallback(
+    async (
+      currentId: string,
+      currentTitle: string,
+      json: string,
+      html: string,
+      currentTags: string[],
+    ) => {
+      if (!json || json === EMPTY_DOC) return;
+      const isTokenValid = await checkStatus();
+      if (!isTokenValid) {
+        alert("登入連線已逾時，為保護您的資料，請重新登入後再儲存。");
+        return;
+      }
+      setSaveStatus("saving");
+      try {
+        const res = await saveDraft({
+          id: currentId || null,
+          title: currentTitle || "未命名草稿",
+          contentJson: json,
+          contentHtml: html,
+          tags: currentTags,
+        });
+        if (res.success) {
+          setSaveStatus("saved");
+          setLastSavedTime(new Date().toLocaleTimeString());
+          if (res.data?.id) setJournalId(res.data.id);
+        }
+      } catch {
+        setSaveStatus("error");
+      }
+    },
+    [checkStatus],
+  );
+  const debouncedSave = useMemo(
+    () => debounce(performSave, 5000),
+    [performSave],
+  );
+  useEffect(() => {
+    return () => {
+      debouncedSave.flush();
+    };
+  }, [debouncedSave]);
+  const saveDraftImmediately = (
+    currentId: string,
+    currentTitle: string,
+    json: string,
+    html: string,
+    currentTags: string[],
+  ) => {
+    debouncedSave.cancel();
+    return performSave(currentId, currentTitle, json, html, currentTags);
+  };
 
   // 1. 進入頁面時，檢查是否有未完成的草稿
   useEffect(() => {
@@ -69,92 +121,6 @@ export const JournalEditorContainer = ({
       isCurrent = false;
     };
   }, []);
-
-  // 2. 定義防抖儲存 API 呼叫 (5 秒無輸入則自動儲存)
-  const debouncedSave = useCallback(
-    debounce(
-      async (
-        currentId: string,
-        currentTitle: string,
-        json: string,
-        html: string,
-        currentTags: string[],
-      ) => {
-        if (!json || json === '{"type":"doc","content":[{"type":"paragraph"}]}')
-          return;
-
-        const isTokenValid = await checkStatus();
-        if (!isTokenValid) {
-          alert("登入連線已逾時，為保護您的資料，請重新登入後再儲存。");
-          return;
-        }
-
-        setSaveStatus("saving");
-        try {
-          const res = await saveDraft({
-            id: currentId || null, //如果是空字串就傳給後端null表示為新草稿
-            title: currentTitle || "未命名草稿",
-            contentJson: json,
-            contentHtml: html,
-            tags: currentTags,
-          });
-          if (res.success) {
-            setSaveStatus("saved");
-            setLastSavedTime(new Date().toLocaleTimeString());
-            if (res.data && res.data.id) {
-              setJournalId(res.data.id); //第一次儲存成功後存下Guid
-            }
-          }
-        } catch {
-          setSaveStatus("error");
-        }
-      },
-      5000,
-    ),
-    [],
-  );
-  //  立即儲存功能
-  const saveDraftImmediately = async (
-    currentId: string,
-    currentTitle: string,
-    json: string,
-    html: string,
-    currentTags: string[],
-  ) => {
-    // 先把防抖的排程取消，避免 5 秒後重複發送相同的儲存請求
-    debouncedSave.cancel();
-
-    if (!json || json === '{"type":"doc","content":[{"type":"paragraph"}]}')
-      return;
-
-    const isTokenValid = await checkStatus();
-    if (!isTokenValid) {
-      alert("登入連線已逾時，為保護您的資料，請重新登入後再儲存。");
-      return;
-    }
-
-    setSaveStatus("saving");
-    try {
-      const res = await saveDraft({
-        id: currentId || null,
-        title: currentTitle || "未命名草稿",
-        contentJson: json,
-        contentHtml: html,
-        tags: currentTags,
-      });
-
-      if (res.success) {
-        setSaveStatus("saved");
-        setLastSavedTime(new Date().toLocaleTimeString());
-
-        if (res.data && res.data.id) {
-          setJournalId(res.data.id);
-        }
-      }
-    } catch {
-      setSaveStatus("error");
-    }
-  };
 
   // 3. 監聽內容變更，觸發自動儲存
   const handleContentChange = (json: string, html: string) => {
@@ -225,6 +191,7 @@ export const JournalEditorContainer = ({
       }
     } catch (err) {
       alert("發布失敗，請稍後再試");
+      console.error("發布日誌失敗", err);
     }
   };
 

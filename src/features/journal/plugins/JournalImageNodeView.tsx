@@ -59,7 +59,7 @@ export const JournalImageNodeView = (props: NodeViewProps) => {
       const deltaX = currentX - startX;
 
       // 算出新的像素寬度，並限制最小與最大範圍 (例如 15% ~ 100%)
-      let newWidthPx = startWidth + deltaX;
+      const newWidthPx = startWidth + deltaX;
       let newPercentage = (newWidthPx / editorWidth) * 100;
 
       if (newPercentage < 15) newPercentage = 15;

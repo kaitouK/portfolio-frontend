@@ -6,7 +6,7 @@ import ArtworkGallery from "./pages/ArtworkGallery";
 import Header from "./components/Header";
 import Login from "./pages/Login";
 import ForbiddenPage from "./pages/Forbidden";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Timeline from "./pages/Timeline";
 

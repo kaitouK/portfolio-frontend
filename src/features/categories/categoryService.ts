@@ -3,6 +3,6 @@ import type { ApiResponseWithData } from "../../types/api";
 import type { CategoryDto } from "./types";
 
 export const getCategories = async (): Promise<ApiResponseWithData<CategoryDto[]>> => {
-  const response = await apiService.get<any,ApiResponseWithData<CategoryDto[]>>("/category");
+  const response = await apiService.get<unknown, ApiResponseWithData<CategoryDto[]>>("/category");
   return response;
 };
