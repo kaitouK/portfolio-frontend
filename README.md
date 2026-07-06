@@ -1,73 +1,162 @@
-# React + TypeScript + Vite
+# MyPortfolio Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React single-page application for a personal art portfolio website.
 
-Currently, two official plugins are available:
+**Live site: [https://kaitouk.github.io/portfolio-frontend/](https://kaitouk.github.io/portfolio-frontend/)**
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+This is the frontend half of a frontend/backend-separated project. It is deployed on **GitHub Pages** and talks to an [ASP.NET Core Web API backend](https://github.com/kaitouK/Portfolio-backend) hosted on Azure App Service. Authentication uses Google OAuth with an HttpOnly cookie issued by the backend.
 
-## React Compiler
+[中文版 README](./README.zh.md)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+# Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Technology                 | Purpose                                       |
+| -------------------------- | --------------------------------------------- |
+| Vite 8                     | Build tool / dev server (HTTPS via basic-ssl) |
+| React 19 + TypeScript      | UI framework                                  |
+| Tailwind CSS v4            | Styling (`@tailwindcss/vite` plugin)          |
+| react-router-dom 7         | Client-side routing                           |
+| axios                      | HTTP client with unified interceptor          |
+| TipTap                     | Rich text editor (with custom image plugins)  |
+| @react-oauth/google        | Google OAuth login popup                      |
+| DOMPurify                  | HTML sanitization before rendering            |
+| yet-another-react-lightbox | Artwork lightbox viewer                       |
+| Vitest                     | Unit testing                                  |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Features
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Artwork Gallery
+
+- Cursor-based infinite scroll (IntersectionObserver triggers loading near the list bottom)
+- Lightbox viewer with thumbnails and captions
+- Inline edit / delete for administrators
+
+## Journal Timeline
+
+- TipTap rich text editor (admin only) with custom image upload plugins
+- Draft auto-save with 5-second debounce; image events trigger immediate save
+- Draft restore prompt on page entry
+- Publish workflow
+- Journal content sanitized with DOMPurify before rendering
+
+## Image Upload
+
+- Drag & drop with live preview
+- Category selection
+- Client-side file type validation (server performs full validation again)
+
+## Authentication
+
+- Google OAuth popup login → backend validates the ID token and issues an `AppAuth` HttpOnly cookie
+- Global auth state via React Context (`AuthContext`)
+- Route guarding with `ProtectedRoute` (admin-only pages)
+- Axios response interceptor centrally handles 401 (redirect to login) and 403 (forbidden page event)
+
+---
+
+# Project Structure
+
+```text
+src
+├── api            # axios instance + response interceptor
+├── context        # AuthContext (global auth state)
+├── hooks          # useArtworks (pagination), useCategories
+├── Pages
+│   ├── Artworks   # Gallery list, cards, edit modal, artwork service
+│   ├── Journal    # Timeline, editor container, TipTap plugins
+│   └── Component  # Shared components (ProtectedRoute, SocialIcons...)
+├── services       # Data services
+└── types          # Shared TypeScript interfaces
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+# Architecture
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+Component ──► custom hook ──► service ──► axios instance ──► Backend API
+                                              │
+                                   response interceptor
+                              (unwraps ApiResponse, handles
+                               401/403, rejects on failure)
+```
+
+- All API calls go through the shared axios instance in `src/api/` — no hard-coded URLs in components.
+- The backend returns a unified `ApiResponse` envelope (`success` / `statusCode` / `message` / `data`); the interceptor unwraps it.
+- `withCredentials: true` is enabled so the `AppAuth` cookie flows on every cross-site request.
+
+---
+
+# Environment Variables
+
+Vite only exposes variables prefixed with `VITE_`. Local values live in `.env.development` / `.env.production` (both gitignored); production values are injected by GitHub Actions from repository secrets.
+
+| Variable                | Description                                                      |
+| ----------------------- | ---------------------------------------------------------------- |
+| `VITE_API_BASE_URL`     | Absolute backend API base URL, e.g. `https://localhost:7098/api` |
+| `VITE_GOOGLE_CLIENT_ID` | Google OAuth Client ID (must match the backend's configured ID)  |
+| `VITE_ADMIN_ENTRY`      | Path segment for the admin entry page                            |
+
+---
+
+# Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+The dev server runs at **https://localhost:5173** (HTTPS is required for the Google OAuth popup and the cross-site secure cookie). The backend must be running at `https://localhost:7098` — see the [backend repository](https://github.com/kaitouK/Portfolio-backend) for setup.
+
+Other scripts:
+
+```bash
+npm run build       # tsc -b && vite build (type errors block the build)
+npm run lint        # eslint .
+npm run preview     # preview the production build locally
+```
+
+---
+
+# Testing
+
+```bash
+npm run test        # run once (vitest run)
+npm run test:watch  # watch mode
+```
+
+Test files are colocated with source files (`*.test.ts`). Current coverage focuses on pure utility functions (URL composition, category name lookup, date formatting).
+
+---
+
+# Deployment (GitHub Pages)
+
+Every push to `main` triggers GitHub Actions:
+
+```
+Push to main
+      │
+      ▼
+npm ci → npm run build   (VITE_* injected from repo secrets)
+      │
+      ▼
+Copy index.html → 404.html
+      │
+      ▼
+Deploy to GitHub Pages
+```
+
+Two details worth knowing:
+
+- **Base path**: the site is served under `/portfolio-frontend/`, configured as `base` in `vite.config.ts` and as `basename` on `BrowserRouter`. Runtime redirects use `import.meta.env.BASE_URL` so the path is defined in one place.
+- **SPA fallback**: GitHub Pages has no server-side rewrite, so the build output's `index.html` is copied to `404.html` — deep links like `/timeline` load the SPA instead of a 404 page.
+
+---
+
+# License
+
+This project is for personal learning and portfolio demonstration purposes.
