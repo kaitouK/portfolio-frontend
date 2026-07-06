@@ -1,4 +1,4 @@
-import type { CategoryDto } from "../../types/Interface";
+import type { CategoryDto } from "../features/categories/types";
 
 export const getFullImageUrl = (path: string | null | undefined): string => {
   if (!path) return "";

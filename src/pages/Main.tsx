@@ -1,4 +1,4 @@
-import { XIcon, PixivIcon } from "./Component/SocialIcons";
+import { XIcon, PixivIcon } from "../components/SocialIcons";
 const Main = () => {
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-64px)] p-10 bg-slate-50/50">

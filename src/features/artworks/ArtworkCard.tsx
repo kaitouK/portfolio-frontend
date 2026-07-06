@@ -1,6 +1,6 @@
 import React from "react";
-import type { ArtworkDto } from "../../types/Interface";
-import { getFullImageUrl, getCategoryName, formatDate } from "./getArtworkInfo";
+import type { ArtworkDto } from "./types";
+import { getFullImageUrl, getCategoryName, formatDate } from "../../utils/artworkHelpers";
 import { useAuth } from "../../context/AuthContext";
 
 interface ArtworkCardProps {

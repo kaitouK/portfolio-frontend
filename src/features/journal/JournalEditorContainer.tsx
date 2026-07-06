@@ -1,12 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
-import { RichTextEditor } from "./component/RichTextEditor";
-import apiService from "../../api/interceptor";
+import { RichTextEditor } from "./RichTextEditor";
+import {
+  getActiveDraft,
+  saveDraft,
+  publishJournal,
+} from "./journalService";
 import { debounce } from "lodash-es";
 import { useAuth } from "../../context/AuthContext";
 
-const BASENAME = "/portfolio-frontend";
 const navigateTo = (path: string) => {
-  window.location.assign(`${BASENAME}${path}`);
+  // BASE_URL 來自 vite.config 的 base（/portfolio-frontend/），避免硬編路徑
+  window.location.assign(`${import.meta.env.BASE_URL.replace(/\/$/, "")}${path}`);
 };
 
 interface JournalEditorContainerProps {
@@ -40,7 +44,7 @@ export const JournalEditorContainer = ({
     let isCurrent = true; //避免觸發兩次詢問視窗
     const checkDraft = async () => {
       try {
-        const res = await apiService.get<any, any>("/journal/draft");
+        const res = await getActiveDraft();
         if (!isCurrent) return;
         if (res.success && res.data) {
           if (window.confirm("偵測到您有未完成的草稿，是否還原？")) {
@@ -87,7 +91,7 @@ export const JournalEditorContainer = ({
 
         setSaveStatus("saving");
         try {
-          const res = await apiService.post<any, any>("/journal/draft", {
+          const res = await saveDraft({
             id: currentId || null, //如果是空字串就傳給後端null表示為新草稿
             title: currentTitle || "未命名草稿",
             contentJson: json,
@@ -131,7 +135,7 @@ export const JournalEditorContainer = ({
 
     setSaveStatus("saving");
     try {
-      const res = await apiService.post<any, any>("/journal/draft", {
+      const res = await saveDraft({
         id: currentId || null,
         title: currentTitle || "未命名草稿",
         contentJson: json,
@@ -190,7 +194,7 @@ export const JournalEditorContainer = ({
     }
 
     try {
-      const res = await apiService.post<any, any>("/journal/publish", {
+      const res = await publishJournal({
         id: journalId || null,
         title,
         contentJson,

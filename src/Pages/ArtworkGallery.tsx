@@ -1,10 +1,10 @@
 import { useState, useRef, useCallback } from "react";
-import { useArtworks } from "../../hooks/useArtworks";
-import { getFullImageUrl } from "./getArtworkInfo";
-import type { ArtworkDto } from "../../types/Interface";
-import { useCategories } from "../../hooks/useCategories";
-import ArtworkCard from "./ArtworkCard";
-import EditArtworkModal from "./EditAndDelete";
+import { useArtworks } from "../features/artworks/useArtworks";
+import { getFullImageUrl } from "../utils/artworkHelpers";
+import type { ArtworkDto } from "../features/artworks/types";
+import { useCategories } from "../features/categories/useCategories";
+import ArtworkCard from "../features/artworks/ArtworkCard";
+import EditArtworkModal from "../features/artworks/EditArtworkModal";
 
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";

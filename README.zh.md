@@ -63,15 +63,18 @@
 ```text
 src
 ├── api            # axios 實例＋回應攔截器
+├── components     # 跨功能共用元件（Header、ProtectedRoute、SocialIcons）
 ├── context        # AuthContext（全域登入狀態）
-├── hooks          # useArtworks（分頁邏輯）、useCategories
-├── Pages
-│   ├── Artworks   # 作品清單、卡片、編輯 Modal、作品 service
-│   ├── Journal    # Timeline、編輯器容器、TipTap 外掛
-│   └── Component  # 共用元件（ProtectedRoute、SocialIcons...）
-├── services       # 資料服務
-└── types          # 共用 TypeScript 型別
+├── features       # 功能模組——元件/hook/service/型別跟著功能走
+│   ├── artworks   # 卡片、編輯 Modal、作品 service、分頁 hook
+│   ├── categories # 分類 service＋hook
+│   └── journal    # 編輯器、TipTap 外掛、日誌 service
+├── pages          # 只放路由目標（一個 <Route> 一個檔案）
+├── types          # 跨功能共用型別（ApiResponse 信封）
+└── utils          # 純工具函式（測試檔同目錄）
 ```
+
+分類規則：只有單一功能使用 → 放 `features/<功能>/`；兩個以上功能使用 → 提升到 `components/`、`utils/` 或 `types/`。
 
 ---
 

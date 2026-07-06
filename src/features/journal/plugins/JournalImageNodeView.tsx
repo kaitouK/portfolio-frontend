@@ -1,6 +1,6 @@
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import React, { useRef, useState } from "react";
-import apiService from "../../../api/interceptor";
+import { deleteJournalImage } from "../journalService";
 
 export const JournalImageNodeView = (props: NodeViewProps) => {
   // 從 props 中解構出節點屬性與刪除節點的方法
@@ -13,7 +13,7 @@ export const JournalImageNodeView = (props: NodeViewProps) => {
 
     if (dbId) {
       try {
-        await apiService.delete(`journal/image/${dbId}`);
+        await deleteJournalImage(dbId);
         console.log("後端圖片刪除成功");
       } catch (error) {
         console.error("刪除後端圖片失敗", error);

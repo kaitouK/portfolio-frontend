@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { JournalEditorContainer } from "./JournalEditorContainer";
+import { JournalEditorContainer } from "../features/journal/JournalEditorContainer";
 import DOMPurify from "dompurify";
-import apiService from "../../api/interceptor";
-import { useAuth } from "../../context/AuthContext";
+import {
+  getPublishedJournals,
+  deleteJournal,
+} from "../features/journal/journalService";
+import { useAuth } from "../context/AuthContext";
 
 interface Post {
   id: string; //  journalId
@@ -15,7 +18,7 @@ interface Post {
   createdAt: Date;
 }
 
-const Timeline2 = () => {
+const Timeline = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [isTimelineLoading, setIsTimelineLoading] = useState(true);
   const { auth } = useAuth();
@@ -25,10 +28,10 @@ const Timeline2 = () => {
       try {
         setIsTimelineLoading(true);
 
-        const res = await apiService.get<any, any>("/journal");
+        const res = await getPublishedJournals();
         if (res.success && Array.isArray(res.data)) {
           // 2. 完美的欄位對齊轉換
-          const formattedPosts: Post[] = res.data.map((item: any) => ({
+          const formattedPosts: Post[] = res.data.map((item) => ({
             id: item.id,
             title: item.title,
             content: item.contentHtml, // 將後端的 contentHtml 帶入前端渲染欄位
@@ -83,7 +86,7 @@ const Timeline2 = () => {
   const handleDelete = async (id: string | number) => {
     if (window.confirm("確定要刪除這篇貼文嗎？")) {
       try {
-        const res = await apiService.delete<any, any>(`/journal/${id}`);
+        const res = await deleteJournal(String(id));
         if (res.success) {
           setPosts((prev) => prev.filter((post) => post.id !== id));
         } else {
@@ -174,4 +177,4 @@ const Timeline2 = () => {
   );
 };
 
-export default Timeline2;
+export default Timeline;

@@ -3,8 +3,8 @@ import {
   getFullImageUrl,
   getCategoryName,
   formatDate,
-} from "./getArtworkInfo";
-import type { CategoryDto } from "../../types/Interface";
+} from "./artworkHelpers";
+import type { CategoryDto } from "../features/categories/types";
 
 describe("getFullImageUrl", () => {
   afterEach(() => {

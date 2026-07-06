@@ -6,7 +6,6 @@
 - 樣式：Tailwind CSS v4（@tailwindcss/vite 外掛，非舊版 tailwind.config.js）
 - 路由：react-router-dom
 - HTTP：axios
-- 驗證：zod（+ zod-validation-error）
 - 富文本：TipTap（Journal 頁，含自訂 plugins）
 - 圖片：yet-another-react-lightbox、tiptap-extension-resize-image
 - 登入：@react-oauth/google
@@ -26,15 +25,17 @@
 - 讀絕對 baseURL，來源是環境變數（VITE\_ 前綴，見 .env；本地指向 https://localhost:7098）
 - 呼叫全部走 src/api/，勿在元件內散落硬編網址
 
-## 目錄
+## 目錄（feature-based）
 
-- src/api/ — axios 實例與 API 封裝
-- src/services/ — 資料/邏輯服務
-- src/context/ — React Context（如 auth 狀態）
-- src/hooks/ — 自訂 hooks
-- src/Pages/ — Artworks、Journal、Component（共用元件）
-- src/types/ — 共用型別
-- src/utils/ — 工具函式
+- src/api/ — axios 實例與回應攔截器
+- src/components/ — 跨功能共用元件（Header、ProtectedRoute、SocialIcons）
+- src/context/ — React Context（auth 狀態）
+- src/features/ — 功能模組（artworks、categories、journal）；元件/hook/service/型別跟著功能走
+- src/pages/ — 只放路由目標元件（App.tsx 的 \<Route\> 一對一對應），頁面保持薄
+- src/types/ — 跨功能共用型別（ApiResponse 信封、CursorPagedResult）
+- src/utils/ — 純工具函式（含 \*.test.ts 同目錄測試）
+
+分類規則：只有單一功能使用 → 放 features/該功能/；兩個以上功能使用 → 提升到 components/、utils/、types/
 
 ## 慣例
 

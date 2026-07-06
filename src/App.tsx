@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import Main from "./Pages/Main";
-import ImageUploader from "./Pages/Upload";
-import ArtworkGallery from "./Pages/Artworks/Lists";
-import Header from "./Pages/Header";
-import Login from "./Pages/Login";
-import ForbiddenPage from "./Pages/Forbidden";
+import Main from "./pages/Main";
+import ImageUploader from "./pages/Upload";
+import ArtworkGallery from "./pages/ArtworkGallery";
+import Header from "./components/Header";
+import Login from "./pages/Login";
+import ForbiddenPage from "./pages/Forbidden";
 import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./Pages/Component/ProtectedRoute";
-import Timeline2 from "./Pages/Journal/Timeline";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Timeline from "./pages/Timeline";
 
 const NavigationHandler = () => {
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const App = () => {
                 }
               />
               <Route path="/lists" element={<ArtworkGallery />} />
-              <Route path="/timeline" element={<Timeline2 />} />
+              <Route path="/timeline" element={<Timeline />} />
               <Route path="/login" element={<Login />} />
               <Route path="/forbidden" element={<ForbiddenPage />} />
               {/* 萬用路由：處理 404 */}

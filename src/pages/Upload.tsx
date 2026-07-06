@@ -6,9 +6,8 @@ import React, {
 } from "react"; //using type ChangeEvent to
 import axios from "axios";
 import { Link } from "react-router-dom";
-import type { ApiResponseWithData, ArtworkResponse } from "../types/Interface";
-import { useCategories } from "../hooks/useCategories";
-import apiService from "../api/interceptor";
+import { useCategories } from "../features/categories/useCategories";
+import { uploadArtwork } from "../features/artworks/artworkService";
 
 const ImageUploader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -108,10 +107,7 @@ const ImageUploader: React.FC = () => {
     formData.append("CompletionDate", completionDate); // 完成日期
 
     try {
-      const response = await apiService.post<
-        any,
-        ApiResponseWithData<ArtworkResponse>
-      >("/Artworks", formData);
+      const response = await uploadArtwork(formData);
 
       const { success, data, message } = response;
       if (success && data) {

@@ -63,15 +63,18 @@ This is the frontend half of a frontend/backend-separated project. It is deploye
 ```text
 src
 ├── api            # axios instance + response interceptor
+├── components     # Shared components (Header, ProtectedRoute, SocialIcons)
 ├── context        # AuthContext (global auth state)
-├── hooks          # useArtworks (pagination), useCategories
-├── Pages
-│   ├── Artworks   # Gallery list, cards, edit modal, artwork service
-│   ├── Journal    # Timeline, editor container, TipTap plugins
-│   └── Component  # Shared components (ProtectedRoute, SocialIcons...)
-├── services       # Data services
-└── types          # Shared TypeScript interfaces
+├── features       # Feature modules — components/hooks/services/types live with their feature
+│   ├── artworks   # Card, edit modal, artwork service, pagination hook
+│   ├── categories # Category service + hook
+│   └── journal    # Editor, TipTap plugins, journal service
+├── pages          # Route targets only (one file per <Route>)
+├── types          # Cross-feature types (ApiResponse envelope)
+└── utils          # Pure helper functions (with colocated tests)
 ```
+
+Placement rule: used by a single feature → lives in `features/<feature>/`; used by two or more → promoted to `components/`, `utils/`, or `types/`.
 
 ---
 

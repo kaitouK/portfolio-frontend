@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { getArtworks, deleteArtwork } from "../Pages/Artworks/artworkService";
-import type { ArtworkDto } from "../types/Interface";
+import { getArtworks, deleteArtwork } from "./artworkService";
+import type { ArtworkDto } from "./types";
 export const useArtworks = (limit: number = 10) => {
   const [artworks, setArtworks] = useState<ArtworkDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);

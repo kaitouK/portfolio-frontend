@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { updateArtwork } from "./artworkService";
-import type { ArtworkDto, CategoryDto } from "../../types/Interface";
+import type { ArtworkDto } from "./types";
+import type { CategoryDto } from "../categories/types";
 
 interface EditArtworkModalProps {
   artwork: ArtworkDto;

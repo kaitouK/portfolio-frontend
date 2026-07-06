@@ -1,8 +1,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import apiService from "../../../api/interceptor";
+import { saveDraft, uploadJournalImage } from "./journalService";
 import { useEffect } from "react";
-import { JournalImageExtension } from "../plugins/JournalImageExtension";
+import { JournalImageExtension } from "./plugins/JournalImageExtension";
 import React from "react";
 interface RichTextEditorProps {
   content: string;
@@ -29,8 +29,6 @@ export const RichTextEditor = ({
   // 處理圖片上傳並插入編輯器
   const uploadAndInsertImage = async (view: any, file: File, pos: number) => {
     let currentJournalId = journalId;
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
       if (!currentJournalId) {
@@ -38,11 +36,9 @@ export const RichTextEditor = ({
         if (!draftCreatingRef.current) {
           console.log("偵測到尚未建立日誌，正在自動建立草稿...");
           draftCreatingRef.current = (async () => {
-            // 呼叫你的後端 POST /journal/draft API
-            const draftRes = await apiService.post<
-              any,
-              { success: boolean; data: { id: string } } // 假設你的 ApiResponse 返回建立成功的實體或 ID
-            >("/journal/draft", {
+            // 呼叫後端 POST /journal/draft API
+            const draftRes = await saveDraft({
+              id: null,
               title: "無標題草稿", // 預設標題
               contentJson: JSON.stringify(view.state.doc.toJSON()), // 順便把當前編輯器內容帶過去
               contentHtml: "<p></p>",
@@ -72,12 +68,9 @@ export const RichTextEditor = ({
       if (!currentJournalId || currentJournalId.trim() === "") return;
 
       // 呼叫後端上傳 API
-      const res = await apiService.post<
-        any,
-        { success: boolean; data: { id: string; imageUrl: string } }
-      >(`/journal/image?journalId=${currentJournalId}`, formData);
+      const res = await uploadJournalImage(currentJournalId, file);
 
-      if (res.success && res.data.imageUrl && editor) {
+      if (res.success && res.data?.imageUrl && editor) {
         const fullUrl = res.data.imageUrl;
         console.log("圖片上傳成功，正在插入編輯器:", fullUrl);
         // 使用 Tiptap 的 command 鏈式操作，這會安全地在「當前游標位置」或「指定位置」插入
