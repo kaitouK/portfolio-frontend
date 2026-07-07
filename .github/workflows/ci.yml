@@ -6,6 +6,9 @@ on:
       - "feature/**"
       - main
   pull_request:
+    branches: 
+      - main 
+      - "feature/*
 
 jobs:
   test:
