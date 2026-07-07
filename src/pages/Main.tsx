@@ -1,4 +1,5 @@
 import { XIcon, PixivIcon } from "../components/SocialIcons";
+import { SOCIAL_LINKS } from "../config/SocialLink";
 const Main = () => {
   return (
     <div className="flex justify-center items-center min-h-[calc(100vh-64px)] p-10 bg-slate-50/50">
@@ -15,7 +16,7 @@ const Main = () => {
         <div className="flex justify-center items-center gap-6">
           {/* X (Twitter) */}
           <a
-            href="https://x.com/lin60606"
+            href={SOCIAL_LINKS.x}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="X (Twitter)"
@@ -26,7 +27,7 @@ const Main = () => {
 
           {/* Pixiv */}
           <a
-            href="https://www.pixiv.net/users/16177205"
+            href={SOCIAL_LINKS.pixiv}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Pixiv"

@@ -10,7 +10,8 @@
     "typecheck": "tsc -b",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:all":"npm run lint && npm run typecheck && npm run test"
   },
   "dependencies": {
     "@react-oauth/google": "^0.13.5",
