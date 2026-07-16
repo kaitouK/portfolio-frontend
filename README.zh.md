@@ -4,7 +4,7 @@
 
 **正式網站：[https://kaitouk.github.io/portfolio-frontend/](https://kaitouk.github.io/portfolio-frontend/)**
 
-本專案是前後端分離架構的前端部分，部署於 **GitHub Pages**，並與部署在 Azure App Service 上的 [ASP.NET Core Web API 後端](https://github.com/kaitouK/Portfolio-backend) 溝通。身分驗證採用 Google OAuth，由後端核發 HttpOnly Cookie。
+本專案是前後端分離架構的前端部分，部署於 **GitHub Pages**，並與部署在 Azure App Service 上的 [ASP.NET Core Web API 後端](https://github.com/kaitouK/Portfolio-backend) 溝通。身分驗證採用 Google OAuth：後端回傳短效 Access Token（僅存於記憶體，以 Bearer 標頭傳送），並以 HttpOnly Cookie 核發可輪轉的 Refresh Token。
 
 [English README](./README.md)
 
@@ -51,10 +51,13 @@
 
 ## 身分驗證
 
-- Google OAuth 彈窗登入 → 後端驗證 ID Token 後核發 `AppAuth` HttpOnly Cookie
+- Google OAuth 彈窗登入 → 後端驗證 ID Token 後回傳短效 Access Token，並設定可輪轉的 Refresh Token HttpOnly Cookie
+- Access Token 僅存於記憶體（不落地 localStorage），由 request 攔截器以 `Authorization: Bearer` 標頭附加
+- 無感刷新（single-flight 保護）：收到 401 時攔截器只呼叫一次 `/auth/refresh`（並發的 401——包括 StrictMode 的雙重執行——共享同一個請求），成功後重送原請求
+- 重新整理頁面後透過 HttpOnly Refresh Cookie 還原登入狀態
 - 以 React Context（`AuthContext`）管理全域登入狀態
 - `ProtectedRoute` 路由守衛（管理員專屬頁面）
-- axios 回應攔截器統一處理 401（導向登入頁）與 403（觸發禁止存取頁事件）
+- 403 觸發禁止存取頁事件；刷新失敗才導向登入頁
 
 ---
 
@@ -62,7 +65,7 @@
 
 ```text
 src
-├── api            # axios 實例＋回應攔截器
+├── api            # axios 實例、攔截器、記憶體 token store、無感刷新 service
 ├── components     # 跨功能共用元件（Header、ProtectedRoute、SocialIcons）
 ├── context        # AuthContext（全域登入狀態）
 ├── features       # 功能模組——元件/hook/service/型別跟著功能走
@@ -83,14 +86,16 @@ src
 ```
 元件 ──► 自訂 hook ──► service ──► axios 實例 ──► 後端 API
                                       │
-                              回應攔截器
-                    （解包 ApiResponse、處理 401/403、
-                       失敗時 reject）
+                            request / response 攔截器
+                    （附加 Bearer Token、解包 ApiResponse、
+                     401 時無感刷新一次並重送原請求、
+                       403 觸發禁止存取事件）
 ```
 
 - 所有 API 呼叫都走 `src/api/` 的共用 axios 實例——元件內不硬編網址。
 - 後端回傳統一的 `ApiResponse` 格式（`success` / `statusCode` / `message` / `data`），由攔截器解包。
-- 啟用 `withCredentials: true`，讓 `AppAuth` Cookie 隨每個跨站請求傳送。
+- request 攔截器將記憶體中的 Access Token 以 `Authorization: Bearer` 標頭附加至每個請求。
+- 啟用 `withCredentials: true`，讓 HttpOnly Refresh Cookie（`__Secure-AppRefresh`，Path 限定 `/api/auth`）隨認證請求傳送。
 
 ---
 
