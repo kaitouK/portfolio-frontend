@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import apiService from "../api/interceptor";
+import { setMemoryToken } from "../api/tokenStore";
 import axios from "axios";
 import { AuthContext, type AuthStatus, type AuthResponse } from "./AuthContext";
+import { refreshToken } from "../api/AuthService";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [auth, setAuth] = useState<AuthStatus>({ isAuthenticated: false });
@@ -9,15 +11,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkStatus = async (): Promise<boolean> => {
     try {
-      const res = await apiService.get<unknown, AuthResponse>("/auth/status");
+      const authStatus = await refreshToken();
 
-      if (res && res.success) {
-        setAuth(res.data);
-        return res.data.isAuthenticated;
+      if (authStatus && authStatus.isAuthenticated) {
+        setAuth(authStatus);
+        return true;
       }
+      setAuth({ isAuthenticated: false });
       return false;
-    } catch (error) {
-      console.error("無法取得驗證狀態", error);
+    } catch {
+      setAuth({ isAuthenticated: false });
       return false;
     } finally {
       setLoading(false);
@@ -34,6 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (res && res.success && res.data.isAuthenticated) {
         setAuth(res.data); // 登入成功，將使用者狀態(含admin角色)寫入 Context
+        setMemoryToken(res.data.accessToken || null);
         return true;
       }
       return false;
@@ -51,6 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
+      setMemoryToken(null);
       await apiService.post("/auth/logout");
       setAuth({ isAuthenticated: false });
       window.location.assign("/"); // 建議使用路徑跳轉而非單純 reload

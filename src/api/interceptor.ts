@@ -1,14 +1,23 @@
 import axios, { type AxiosInstance } from 'axios';
-let rawUrl = (import.meta.env.VITE_API_BASE_URL || '').trim();
-
-if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-  rawUrl = `https://${rawUrl}`;
-}
+import { refreshToken } from './AuthService';
+import { setMemoryToken, getMemoryToken } from './tokenStore';
+import { API_BASE_URL } from '../config/ApiUrl';
 const apiService: AxiosInstance = axios.create({
-  baseURL: rawUrl,//讀取環境變數
+  baseURL: API_BASE_URL,//讀取環境變數
   timeout: 30000,
   withCredentials: true,
 });
+apiService.interceptors.request.use((config) => {
+  const token = getMemoryToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+},
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 apiService.interceptors.response.use(
   (response) => {
 
@@ -20,14 +29,38 @@ apiService.interceptors.response.use(
     }
     return res;//直接回傳data
   },
-  (error) => {
+  async (error) => {
     const status = error.response?.status;
+    const originalRequest = error.config;
     switch (status) {
-      case 401:
-        console.error('登入逾時，請重新登入');
-        // BASE_URL 來自 vite.config 的 base（/portfolio-frontend/），避免硬編路徑
+      case 401: {
+        const requestUrl = originalRequest?.url || '';
+        if (requestUrl.includes('/auth/')) {
+          console.error('[Interceptor] 驗證相關請求失敗');
+          return Promise.reject(error);
+        }
+
+        console.error('Access Token 已過期，嘗試自動刷新...');
+        if (originalRequest._retry) {
+          setMemoryToken(null);
+          window.location.href = `${import.meta.env.BASE_URL}login`;
+          break;
+        }
+        originalRequest._retry = true;
+
+        const authStatus = await refreshToken();
+        if (authStatus && authStatus.accessToken) {
+          // 刷新成功：更新當前請求的 Header，並直接重新發送
+          originalRequest.headers.Authorization = `Bearer ${authStatus.accessToken}`;
+          return apiService(originalRequest); // 拿到新 Token 後，重新發送
+        }
+        // 刷新失敗：不導頁的承諾已在 refreshToken 內處理。
+        // 但由於是在 API 攔截器中完全失敗，此處仍需引導使用者重新登入
+        console.error('無效的憑證，重定向至登入頁面');
+        setMemoryToken(null);
         window.location.href = `${import.meta.env.BASE_URL}login`;
         break;
+      }
       case 403:
         console.error('權限不足，拒絕存取');
         window.dispatchEvent(new CustomEvent('api-forbidden', {
