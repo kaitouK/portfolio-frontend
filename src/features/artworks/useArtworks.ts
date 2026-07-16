@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { getArtworks, deleteArtwork } from "./artworkService";
 import type { ArtworkDto } from "./types";
-export const useArtworks = (limit: number = 10) => {
+export const useArtworks = (limit: number = 10, tags: string[] = []) => {
+  const tagsKey = tags.join(",");
   const [artworks, setArtworks] = useState<ArtworkDto[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export const useArtworks = (limit: number = 10) => {
     setLoading(true);
     try {
       const currentCursor = isRefresh ? null : cursor;
-      const result = await getArtworks(limit, currentCursor);
+      const result = await getArtworks(limit, currentCursor, tagsKey ? tagsKey.split(",") : []);
       if (result.success && result.data) {
         const { data, nextCursor: newCursor, hasNextPage: hasNext } = result.data;
         // 如果是第一頁(或重新整理)就直接覆蓋；否則就累加到陣列後方
@@ -39,7 +40,7 @@ export const useArtworks = (limit: number = 10) => {
       loadingRef.current = false;
       setLoading(false);
     }
-  }, [limit]);
+  }, [limit, tagsKey]);
   // 提供給外部的主動重新整理函式
   const refresh = () => {
     fetchArtworks(null, true);

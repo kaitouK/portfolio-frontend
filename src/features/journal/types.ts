@@ -12,7 +12,7 @@ export interface JournalEntry {
     title: string;
     contentJson: JSONContent; // Tiptap JSON 內自然包含 {"type": "image", "attrs": {"src": "..."}}
     contentHtml: string;      // HTML 內自然包含 <img src="..." />
-    tags?: string;
+    tags?: string[];
     status: JournalStatus;
     userId?: string;
     createdAt: string;

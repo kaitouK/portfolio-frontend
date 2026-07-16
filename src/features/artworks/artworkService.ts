@@ -18,10 +18,16 @@ export interface ArtworkUpdatePayload {
 export const getArtworks = async (
   limit: number = 10,
   cursor: string | null = null,
+  tags: string[] = [],
 ): Promise<ApiResponseWithData<CursorPagedResult<ArtworkDto>>> => {
   let url = `/artworks?limit=${limit}`;
   if (cursor) {
     url += `&cursor=${encodeURIComponent(cursor)}`;
+  }
+  if (tags && tags.length > 0) {
+    tags.forEach(tag => {
+      url += `&tags=${encodeURIComponent(tag)}`;
+    })
   }
   const response = await apiService.get<
     unknown,
