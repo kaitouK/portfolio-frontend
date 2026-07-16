@@ -6,6 +6,7 @@ export interface AuthStatus {
   email?: string;
   role?: "admin" | "user";
   displayName?: string;
+  accessToken?: string;
 }
 
 export interface AuthResponse {

@@ -3,12 +3,14 @@ name: CI - Check Code Quality
 on:
   push:
     branches:
-      - "feature/**"
       - main
+      - "feature/**"
+      - "hotfix/**"
   pull_request:
     branches: 
       - main 
       - "feature/**"
+      - "hotfix/**"
 
 jobs:
   test:
