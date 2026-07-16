@@ -4,7 +4,7 @@ React single-page application for a personal art portfolio website.
 
 **Live site: [https://kaitouk.github.io/portfolio-frontend/](https://kaitouk.github.io/portfolio-frontend/)**
 
-This is the frontend half of a frontend/backend-separated project. It is deployed on **GitHub Pages** and talks to an [ASP.NET Core Web API backend](https://github.com/kaitouK/Portfolio-backend) hosted on Azure App Service. Authentication uses Google OAuth with an HttpOnly cookie issued by the backend.
+This is the frontend half of a frontend/backend-separated project. It is deployed on **GitHub Pages** and talks to an [ASP.NET Core Web API backend](https://github.com/kaitouK/Portfolio-backend) hosted on Azure App Service. Authentication uses Google OAuth: the backend returns a short-lived access token (kept in memory, sent as a Bearer header) plus a rotating refresh token in an HttpOnly cookie.
 
 [中文版 README](./README.zh.md)
 
@@ -51,10 +51,13 @@ This is the frontend half of a frontend/backend-separated project. It is deploye
 
 ## Authentication
 
-- Google OAuth popup login → backend validates the ID token and issues an `AppAuth` HttpOnly cookie
+- Google OAuth popup login → backend validates the ID token, returns a short-lived access token and sets a rotating refresh-token HttpOnly cookie
+- Access token lives in memory only (never in localStorage), attached via `Authorization: Bearer` header by the request interceptor
+- Silent refresh with a single-flight guard: on 401 the interceptor calls `/auth/refresh` once (concurrent 401s — including StrictMode's double effect — share the same request), then retries the original request
+- Session restore on page reload through the HttpOnly refresh cookie
 - Global auth state via React Context (`AuthContext`)
 - Route guarding with `ProtectedRoute` (admin-only pages)
-- Axios response interceptor centrally handles 401 (redirect to login) and 403 (forbidden page event)
+- 403 responses trigger a forbidden-page event; a failed refresh redirects to login
 
 ---
 
@@ -62,7 +65,7 @@ This is the frontend half of a frontend/backend-separated project. It is deploye
 
 ```text
 src
-├── api            # axios instance + response interceptor
+├── api            # axios instance, interceptors, in-memory token store, silent-refresh service
 ├── components     # Shared components (Header, ProtectedRoute, SocialIcons)
 ├── context        # AuthContext (global auth state)
 ├── features       # Feature modules — components/hooks/services/types live with their feature
@@ -83,14 +86,16 @@ Placement rule: used by a single feature → lives in `features/<feature>/`; use
 ```
 Component ──► custom hook ──► service ──► axios instance ──► Backend API
                                               │
-                                   response interceptor
-                              (unwraps ApiResponse, handles
-                               401/403, rejects on failure)
+                                request / response interceptors
+                             (attach Bearer token; unwrap ApiResponse;
+                              on 401 silently refresh once and retry;
+                              403 triggers forbidden event)
 ```
 
 - All API calls go through the shared axios instance in `src/api/` — no hard-coded URLs in components.
 - The backend returns a unified `ApiResponse` envelope (`success` / `statusCode` / `message` / `data`); the interceptor unwraps it.
-- `withCredentials: true` is enabled so the `AppAuth` cookie flows on every cross-site request.
+- The request interceptor attaches the in-memory access token as an `Authorization: Bearer` header.
+- `withCredentials: true` is enabled so the HttpOnly refresh cookie (`__Secure-AppRefresh`, scoped to `/api/auth`) flows on auth requests.
 
 ---
 
