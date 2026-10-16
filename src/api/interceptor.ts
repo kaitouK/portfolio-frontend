@@ -2,16 +2,20 @@ import axios, { type AxiosInstance } from 'axios';
 import { refreshToken } from './AuthService';
 import { setMemoryToken, getMemoryToken } from './tokenStore';
 import { API_BASE_URL } from '../config/ApiUrl';
+import { beginRequest, isColdStartError, waitForBackend, waitIfWaking } from './coldStart';
 const apiService: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,//讀取環境變數
   timeout: 30000,
   withCredentials: true,
 });
-apiService.interceptors.request.use((config) => {
+apiService.interceptors.request.use(async (config) => {
+  // 後端喚醒中就先排隊，不要一起撞上冷啟動
+  await waitIfWaking();
   const token = getMemoryToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config._endTrack = beginRequest();
   return config;
 },
   (error) => {
@@ -20,6 +24,7 @@ apiService.interceptors.request.use((config) => {
 );
 apiService.interceptors.response.use(
   (response) => {
+    response.config._endTrack?.();
 
     const res = response.data;
 
@@ -30,8 +35,18 @@ apiService.interceptors.response.use(
     return res;//直接回傳data
   },
   async (error) => {
+    error.config?._endTrack?.();
     const status = error.response?.status;
     const originalRequest = error.config;
+
+    // 冷啟動：GET 等後端醒來後重送一次；其他 method 無法確定後端是否已處理，不自動重送
+    if (originalRequest?.method === 'get' && !originalRequest._coldStartRetry && isColdStartError(error)) {
+      originalRequest._coldStartRetry = true;
+      if (await waitForBackend()) {
+        return apiService(originalRequest);
+      }
+    }
+
     switch (status) {
       case 401: {
         const requestUrl = originalRequest?.url || '';

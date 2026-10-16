@@ -4,6 +4,7 @@ import Main from "./pages/Main";
 import ImageUploader from "./pages/Upload";
 import ArtworkGallery from "./pages/ArtworkGallery";
 import Header from "./components/Header";
+import ServerWakeBanner from "./components/ServerWakeBanner";
 import Login from "./pages/Login";
 import ForbiddenPage from "./pages/Forbidden";
 import { AuthProvider } from "./context/AuthProvider";
@@ -58,6 +59,7 @@ const App = () => {
               <Route path="*" element={<Main />} />
             </Routes>
           </main>
+          <ServerWakeBanner />
         </div>
       </BrowserRouter>
     </AuthProvider>
