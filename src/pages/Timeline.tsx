@@ -30,7 +30,7 @@ const Timeline = () => {
 
         const res = await getPublishedJournals();
         if (res.success && Array.isArray(res.data)) {
-          // 2. 完美的欄位對齊轉換
+          // 2. 欄位對齊轉換
           const formattedPosts: Post[] = res.data.map((item) => ({
             id: item.id,
             title: item.title,

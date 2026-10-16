@@ -64,13 +64,12 @@ export const RichTextEditor = ({
             "後續圖片觸發：偵測到草稿正在建立中，進入排隊等待狀態...",
           );
         }
+        currentJournalId = await draftCreatingRef.current;
       }
-      if (!currentJournalId || currentJournalId.trim() === "") {
+      if (!currentJournalId?.trim()) {
         console.error("錯誤：journalId 依舊為空，取消圖片上傳。");
         return;
       }
-      //雙重防呆
-      if (!currentJournalId || currentJournalId.trim() === "") return;
 
       // 呼叫後端上傳 API
       const res = await uploadJournalImage(currentJournalId, file);
@@ -103,6 +102,7 @@ export const RichTextEditor = ({
         onImageEventSync(jsonStr, htmlStr, currentJournalId);
       }
     } catch (err) {
+      draftCreatingRef.current = null; // 重置 ref，讓後續操作可以重新嘗試建立草稿
       console.error("圖片上傳失敗", err);
     }
   };
