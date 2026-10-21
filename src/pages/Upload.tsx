@@ -7,7 +7,18 @@ import React, {
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { useCategories } from "../features/categories/useCategories";
-import { uploadArtwork } from "../features/artworks/artworkService";
+import {
+  uploadArtwork,
+  backfillArtworkImages,
+} from "../features/artworks/artworkService";
+import { todayInputValue } from "../utils/artworkHelpers";
+
+interface BackfillStatus {
+  running: boolean;
+  processed: number;
+  failed: number;
+  message: string | null;
+}
 
 const ImageUploader: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -23,11 +34,17 @@ const ImageUploader: React.FC = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [completionDate, setCompletionDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  ); // 新增：完成日期，預設為今天
+    todayInputValue(),
+  ); // 新增：完成日期，預設為今天（本地日期）
   const effectiveCategoryId =
     categoryId !== 0 ? categoryId : (categories[0]?.categoryId ?? 0);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [backfill, setBackfill] = useState<BackfillStatus>({
+    running: false,
+    processed: 0,
+    failed: 0,
+    message: null,
+  });
 
   // 監控selectedFile 變化產生預覽圖
   useEffect(() => {
@@ -124,6 +141,38 @@ const ImageUploader: React.FC = () => {
       }
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // 補齊舊作品的寬高與顯示圖：每批 5 張，用上一批的 lastId 當下一批的 afterId，直到沒有下一批
+  const handleBackfill = async (): Promise<void> => {
+    if (backfill.running) return;
+    let afterId = 0;
+    let processed = 0;
+    let failed = 0;
+    let hasMore = true;
+    setBackfill({ running: true, processed, failed, message: null });
+    try {
+      while (hasMore) {
+        const response = await backfillArtworkImages(afterId, 5);
+        if (!response.success || !response.data) {
+          throw new Error(response.message || "補資料失敗");
+        }
+        processed += response.data.processed;
+        failed += response.data.failed;
+        afterId = response.data.lastId;
+        hasMore = response.data.hasMore;
+        setBackfill({ running: true, processed, failed, message: null });
+      }
+      setBackfill({ running: false, processed, failed, message: "完成" });
+    } catch (error) {
+      console.error("補資料失敗:", error);
+      setBackfill({
+        running: false,
+        processed,
+        failed,
+        message: "中途發生錯誤，可以再按一次從頭繼續（已處理的不會重做）",
+      });
     }
   };
 
@@ -289,6 +338,27 @@ const ImageUploader: React.FC = () => {
         >
           ← 返回首頁
         </Link>
+      </div>
+
+      {/* 維護：舊作品補寬高與顯示圖（新上傳的作品會自動產生，不需要按） */}
+      <div className="flex flex-col gap-2 pt-6 border-t border-gray-100">
+        <button
+          onClick={handleBackfill}
+          disabled={backfill.running}
+          className={`w-full py-2 rounded-xl text-sm font-bold transition-colors ${
+            backfill.running
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+          }`}
+        >
+          {backfill.running ? "補資料中..." : "補齊舊作品尺寸與顯示圖"}
+        </button>
+        {(backfill.running || backfill.message) && (
+          <p className="text-sm text-center text-gray-500">
+            已處理 {backfill.processed} 張、失敗 {backfill.failed} 張
+            {backfill.message && `：${backfill.message}`}
+          </p>
+        )}
       </div>
     </div>
   );

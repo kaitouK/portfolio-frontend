@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import type { ArtworkDto } from "./types";
 import {
   getFullImageUrl,
+  getDisplayImageUrl,
+  getAspectRatio,
   getCategoryName,
   formatDate,
 } from "../../utils/artworkHelpers";
@@ -27,6 +29,15 @@ const ArtworkCard = ({
 }: ArtworkCardProps) => {
   const { auth } = useAuth();
   const isAdmin = auth.isAuthenticated && auth.role === "admin";
+  const [displayLoaded, setDisplayLoaded] = useState(false);
+
+  const thumbSrc = getFullImageUrl(art.thumbnailUrl);
+  const displaySrc = getDisplayImageUrl(art);
+  // 有寬高就先用 aspect-ratio 佔好位置，圖片載入前後版面都不會跳動（跳轉才準）
+  const aspectRatio = getAspectRatio(art.imageWidth, art.imageHeight);
+  // 底下有縮圖（或已佔位）時，高畫質圖疊在上面淡入；否則讓高畫質圖自己撐開高度
+  const overlayDisplay = Boolean(thumbSrc || aspectRatio);
+  const layerClass = "absolute inset-0 w-full h-full object-contain";
   return (
     <div
       className="break-inside-avoid group bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 relative cursor-pointer border border-gray-100"
@@ -82,14 +93,35 @@ const ArtworkCard = ({
           </div>
         )}
 
-        {/* 圖片預覽 */}
-        {art.thumbnailUrl || art.imageUrl ? (
-          <img
-            src={getFullImageUrl(art.thumbnailUrl || art.imageUrl)}
-            alt={art.title}
-            className="w-full h-auto block"
-            loading="lazy"
-          />
+        {/* 圖片預覽：先顯示縮圖，高畫質圖載完後淡入蓋上 */}
+        {thumbSrc || displaySrc ? (
+          <div
+            className="relative"
+            style={aspectRatio ? { aspectRatio } : undefined}
+          >
+            {thumbSrc && (
+              <img
+                src={thumbSrc}
+                alt=""
+                aria-hidden="true"
+                className={aspectRatio ? layerClass : "w-full h-auto block"}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+            {displaySrc && (
+              <img
+                src={displaySrc}
+                alt={art.title}
+                className={`${overlayDisplay ? layerClass : "w-full h-auto block"} transition-opacity duration-500 ${
+                  displayLoaded ? "opacity-100" : "opacity-0"
+                }`}
+                onLoad={() => setDisplayLoaded(true)}
+                loading="lazy"
+                decoding="async"
+              />
+            )}
+          </div>
         ) : (
           <div className="flex items-center justify-center h-48 text-gray-400">
             無預覽圖

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { updateArtwork } from "./artworkService";
 import type { ArtworkDto } from "./types";
 import type { CategoryDto } from "../categories/types";
+import { toDateInputValue, todayInputValue } from "../../utils/artworkHelpers";
 
 interface EditArtworkModalProps {
   artwork: ArtworkDto;
@@ -24,8 +25,8 @@ const EditArtworkModal = ({
     description: artwork.description || "",
     categoryId: artwork.categoryId || categories[0]?.categoryId || 1,
     completionDate: artwork.completionDate
-      ? new Date(artwork.completionDate).toISOString().split("T")[0]
-      : new Date().toISOString().split("T")[0],
+      ? toDateInputValue(artwork.completionDate)
+      : todayInputValue(),
   });
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
