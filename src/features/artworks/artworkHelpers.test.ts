@@ -9,7 +9,7 @@ import {
   toDateInputValue,
   todayInputValue,
 } from "./artworkHelpers";
-import type { CategoryDto } from "../features/categories/types";
+import type { CategoryDto } from "../../features/categories/types";
 
 describe("getFullImageUrl", () => {
   afterEach(() => {

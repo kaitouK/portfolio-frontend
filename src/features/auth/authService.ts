@@ -1,7 +1,7 @@
 import axios from "axios";
-import { type AuthResponse, type AuthStatus } from "../context/AuthContext";
-import { setMemoryToken } from "./tokenStore";
-import { API_BASE_URL } from "../config/ApiUrl";
+import { type AuthResponse, type AuthStatus } from "./AuthContext";
+import { setMemoryToken } from "../../api/tokenStore";
+import { API_BASE_URL } from "../../config/apiUrl";
 
 
 // ==================== Single Flight 狀態變數 ====================

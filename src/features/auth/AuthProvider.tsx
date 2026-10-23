@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import apiService from "../api/interceptor";
 import { setMemoryToken } from "../api/tokenStore";
 import axios from "axios";
-import { AuthContext, type AuthStatus, type AuthResponse } from "./AuthContext";
+import { AuthContext, type AuthStatus, type AuthResponse } from "../features/auth/AuthContext";
 import { refreshToken } from "../api/AuthService";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

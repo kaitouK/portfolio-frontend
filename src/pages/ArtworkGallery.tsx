@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useArtworks } from "../features/artworks/useArtworks";
 import { useArtworkIndex } from "../features/artworks/useArtworkIndex";
-import { getFullImageUrl, toDateInputValue } from "../utils/artworkHelpers";
+import { getFullImageUrl, toDateInputValue } from "../features/artworks/artworkHelpers";
 import type { ArtworkDto } from "../features/artworks/types";
 import { useCategories } from "../features/categories/useCategories";
 import ArtworkCard from "../features/artworks/ArtworkCard";
@@ -273,7 +273,7 @@ const ArtworkGallery = () => {
       </button>
       {drawerOpen && (
         <div
-          className="xl:hidden fixed inset-0 z-[60]"
+          className="xl:hidden fixed inset-0 z-60"
           role="dialog"
           aria-modal="true"
           aria-label="縮圖導覽"

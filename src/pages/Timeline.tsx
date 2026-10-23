@@ -5,7 +5,7 @@ import {
   getPublishedJournals,
   deleteJournal,
 } from "../features/journal/journalService";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../features/auth/useAuth";
 
 interface Post {
   id: string; //  journalId

@@ -8,7 +8,7 @@ import ServerWakeBanner from "./components/ServerWakeBanner";
 import Login from "./pages/Login";
 import ForbiddenPage from "./pages/Forbidden";
 import { AuthProvider } from "./context/AuthProvider";
-import ProtectedRoute from "./components/ProtectedRoute";
+import ProtectedRoute from "./features/auth/ProtectedRoute";
 import Timeline from "./pages/Timeline";
 
 const NavigationHandler = () => {

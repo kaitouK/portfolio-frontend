@@ -7,7 +7,7 @@ import {
   getCategoryName,
   formatDate,
 } from "../../utils/artworkHelpers";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../auth/useAuth";
 import type { CategoryDto } from "../categories/types";
 
 interface ArtworkCardProps {

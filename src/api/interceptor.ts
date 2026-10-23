@@ -1,7 +1,7 @@
 import axios, { type AxiosInstance } from 'axios';
-import { refreshToken } from './AuthService';
+import { refreshToken } from '../features/auth/authService';
 import { setMemoryToken, getMemoryToken } from './tokenStore';
-import { API_BASE_URL } from '../config/ApiUrl';
+import { API_BASE_URL } from '../config/apiUrl';
 import { beginRequest, isColdStartError, waitForBackend, waitIfWaking } from './coldStart';
 const apiService: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,//讀取環境變數

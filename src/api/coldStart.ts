@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL } from "../config/ApiUrl";
+import { API_BASE_URL } from "../config/apiUrl";
 
 // 後端在 Azure App Service F1，閒置會被卸載；這裡負責「等後端醒來」與「喚醒中」狀態
 declare module "axios" {

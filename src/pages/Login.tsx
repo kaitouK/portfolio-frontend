@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../hooks/useAuth";
+import { useAuth } from "../features/auth/useAuth";
 import { GoogleLogin, type CredentialResponse } from "@react-oauth/google";
 
 const Login: React.FC = () => {

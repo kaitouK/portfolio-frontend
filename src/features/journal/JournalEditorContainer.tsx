@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { RichTextEditor } from "./RichTextEditor";
 import { getActiveDraft, saveDraft, publishJournal } from "./journalService";
 import { debounce } from "lodash-es";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../auth/useAuth";
 const navigateTo = (path: string) => {
   // BASE_URL 來自 vite.config 的 base（/portfolio-frontend/），避免硬編路徑
   window.location.assign(
